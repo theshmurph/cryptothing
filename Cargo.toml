@@ -1,0 +1,6 @@
+[package]
+name = "cryptothing"
+version = "0.1.0"
+authors = ["Bryce Murphy <brshmurphy@gmail.com>"]
+
+[dependencies]
