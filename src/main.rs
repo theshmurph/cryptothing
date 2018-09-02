@@ -32,7 +32,6 @@ fn get_key(key: String) -> Option<Key> {
     let reader = BufReader::new(keys);
     for line in reader.lines() {
         if line.unwrap() == key {
-            println!("yes");
             return Some(Key::new(key))
         } else {
             println!("no")
@@ -60,10 +59,10 @@ fn encrypt(filename: &str) {
 impl Key {
 
     fn new(key: String) -> Key {
-        let mut degree = 0;
+        let mut degree: u32 = 0;
         for k in key.chars() {
             // VERY BASIC ENCRYPTION: FIX
-            degree += k.to_digit(10).unwrap();
+            degree += k.to_digit(36).unwrap();
         }
         Key {
             offset: degree
