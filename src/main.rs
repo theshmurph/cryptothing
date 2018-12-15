@@ -1,3 +1,8 @@
+/*
+extern crate ssh2;
+
+use ssh2::Session;
+use std::net::TcpStream;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
@@ -6,8 +11,20 @@ struct Key {
     offset: u32
 }
 
+//let mut agent = sess.agent().unwrap();
+
 fn main() {
+    let tcp = TcpStream::connect("192.168.1.11:22").unwrap();
+    let mut session = Session::new().unwrap();
+    session.handshake(&tcp).unwrap();
+    session.userauth_password("main", "BRMurphy35").unwrap();
+    if session.authenticated() {
+        let mut channel = session.channel_session().unwrap();
+        channel.exec("cd directory").unwrap();
+        
+    }
     //let data = read("example.txt");
+    /*
     let key = read("key.txt");
     match get_key(key) {
         Some(k) => {
@@ -16,10 +33,10 @@ fn main() {
         } None => {
             println!("not good");
         }
-    }
+    }*/
 
 }
-
+/*
 fn read(filename: &str) -> String {
     let mut data = String::new();
     File::open(filename).expect("file not found")
@@ -54,7 +71,7 @@ fn encrypt(filename: &str) {
             println!("{}", c);
         }
     }
-}
+}*/
 
 impl Key {
 
@@ -70,3 +87,4 @@ impl Key {
     }
 
 }
+*/
