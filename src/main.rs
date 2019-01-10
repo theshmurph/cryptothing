@@ -3,6 +3,7 @@ extern crate ssh2;
 use ssh2::Session;
 use std::io::Read;
 use std::net::TcpStream;
+use std::collections::HashMap;
 
 mod linter;
 
@@ -23,6 +24,13 @@ fn main() {
 }
 
 fn map_to_struct(data: String) {
-    linter::map(data);
+    let hash = linter::map(data);
+    find("amazon.com", hash);
+}
 
+fn find(name: &str, hash: HashMap<String, linter::Entry>) {
+    match hash.get(name) {
+        Some(entry) => println!("id: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
+        None => println!("No entry found for that ID.")
+    }
 }
