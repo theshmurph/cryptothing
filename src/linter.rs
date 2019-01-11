@@ -9,7 +9,7 @@ pub struct Entry {
 pub fn map(data: String) -> HashMap<String, Entry> {
     let mut hash: HashMap<String, Entry> = HashMap::new();
     for i in entrify(data) {
-        hash.insert(i.id.to_string(), i);
+        hash.insert(i.id.to_string(), i); // works because i is no longer being used twice
     }
     hash
 }
