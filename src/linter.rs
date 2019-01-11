@@ -1,3 +1,4 @@
+use std::io::BufReader;
 use std::collections::HashMap;
 
 pub struct Entry {
@@ -14,6 +15,7 @@ pub fn map(data: String) -> HashMap<String, Entry> {
     hash
 }
 
+// could be replaced with bufreader, and may very well be done
 fn entrify(data: String) -> Vec<Entry> {
     enum EntryState { Id, Name, Pass, New }
 
