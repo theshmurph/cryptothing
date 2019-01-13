@@ -22,21 +22,27 @@ fn main() {
         let token = read_next();
         let data: HashMap<String, linter::Entry>; // probably inefficient and dumb
         // put in something to auth token
-        if exists(token) {
+        if exists(&token) {
             data = get_data_for(sess, token);
+
+            let s = test_lifetime();
+
+            // terminal
+            loop {
+                parse_command(read_next(), &data);
+            }
         } else {
             println!("user does not exist.");
         }
-
-        // terminal
-        loop {
-            parse_command(read_next());
-        }
-
     } else {
         println!("unable to connect. terminating...")
     }
 
+}
+
+fn test_lifetime() -> String {
+    let test = String::from("Test");
+    test
 }
 
 fn read_next<'a>() -> Vec<&'a str> {
@@ -56,21 +62,26 @@ fn get_data_for(sess: Session, token: Vec<&str>) -> HashMap<String, linter::Entr
 }
 
 // could very well be replaced by get_data_for having a little more logic
-fn exists(token: Vec<&str>) -> bool {
+fn exists(token: &Vec<&str>) -> bool {
     true
 }
 
-fn parse_command(command: Vec<&str>) {
+fn parse_command(command: Vec<&str>, data: &HashMap<String, linter::Entry>) {
     match command[0] {
-        "find" => find(command[1..]),
+        //"find" => find(command[1], data), // try to make OO if it makes sense
         "exit" => std::process::exit(0),
         _ => println!("unknown command '{}'", command.join(" "))
     }
 }
 
-fn find(name: &str, hash: HashMap<String, linter::Entry>) {
-    match hash.get(name) {
-        Some(entry) => println!("id: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
-        None => println!("No entry found for that ID.")
+fn find(command: &str, hash: HashMap<String, linter::Entry>) {
+    match command.len() {
+        1 => {
+            match hash.get(command) {
+                Some(entry) => println!("id: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
+                None => println!("No entry found for that ID.")
+            }
+        }
+        _ => println!("unexpected command after 'find'. try again.")
     }
 }
