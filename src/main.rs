@@ -19,7 +19,8 @@ fn main() {
         println!("session connected!");
         println!("enter user token: ");
 
-        let token = read_next();
+        let mut t = String::new();
+        let token = read_next(&mut t);
         let data: HashMap<String, linter::Entry>; // probably inefficient and dumb
         // put in something to auth token
         if exists(&token) {
@@ -29,7 +30,8 @@ fn main() {
 
             // terminal
             loop {
-                parse_command(read_next(), &data);
+                let mut s = String::new();
+                parse_command(read_next(&mut s), &data);
             }
         } else {
             println!("user does not exist.");
@@ -45,13 +47,10 @@ fn test_lifetime() -> String {
     test
 }
 
-fn read_next<'a>() -> Vec<&'a str> {
-    let mut temp = String::new();
-    stdin().read_line(&mut temp).unwrap();
-    let t: Vec<&str> = temp.trim().split(" ").collect();
-    t
+fn read_next(buf: &mut String) -> Vec<&str> {
+    stdin().read_line(buf).unwrap();
+    buf.trim().split(" ").collect()
 }
-
 // return data for valid user, or fails
 fn get_data_for(sess: Session, token: Vec<&str>) -> HashMap<String, linter::Entry> {
     let mut channel = sess.channel_session().unwrap();
@@ -68,13 +67,20 @@ fn exists(token: &Vec<&str>) -> bool {
 
 fn parse_command(command: Vec<&str>, data: &HashMap<String, linter::Entry>) {
     match command[0] {
-        //"find" => find(command[1], data), // try to make OO if it makes sense
+        "find" => find(command[1], data), // try to make OO if it makes sense // also, extend funtionality to include multiple searches per command (not just limited to command[1])
         "exit" => std::process::exit(0),
         _ => println!("unknown command '{}'", command.join(" "))
     }
 }
 
-fn find(command: &str, hash: HashMap<String, linter::Entry>) {
+fn find(command: &str, hash: &HashMap<String, linter::Entry>) {
+    //println!("{}", command.len());
+    //println!("{}", command);
+    match hash.get(command) {
+        Some(entry) => println!("\nid: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
+        None => println!("No entry found for that ID.")
+    }
+    /* // get whenever multiple searches are supported
     match command.len() {
         1 => {
             match hash.get(command) {
@@ -83,5 +89,5 @@ fn find(command: &str, hash: HashMap<String, linter::Entry>) {
             }
         }
         _ => println!("unexpected command after 'find'. try again.")
-    }
+    }*/
 }
