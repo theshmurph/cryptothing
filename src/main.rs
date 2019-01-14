@@ -26,8 +26,6 @@ fn main() {
         if exists(&token) {
             data = get_data_for(sess, token);
 
-            let s = test_lifetime();
-
             // terminal
             loop {
                 let mut s = String::new();
@@ -40,11 +38,6 @@ fn main() {
         println!("unable to connect. terminating...")
     }
 
-}
-
-fn test_lifetime() -> String {
-    let test = String::from("Test");
-    test
 }
 
 fn read_next(buf: &mut String) -> Vec<&str> {
@@ -63,6 +56,14 @@ fn get_data_for(sess: Session, token: Vec<&str>) -> HashMap<String, linter::Entr
 // could very well be replaced by get_data_for having a little more logic
 fn exists(token: &Vec<&str>) -> bool {
     true
+    /*
+    let mut channel = sess.channel_session().unwrap();
+    channel.exec("cat directory/users.txt").unwrap();
+    let mut s = String::new();
+    channel.read_to_string(&mut s).unwrap();
+
+    let m = linter::map(s.to_string());
+    if */
 }
 
 fn parse_command(command: Vec<&str>, data: &HashMap<String, linter::Entry>) {
