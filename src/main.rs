@@ -10,9 +10,9 @@ mod linter;
 
 // represents a connected user
 struct User {
-    name: Option<String>,
-    password: Option<String>,
-    data: Option<HashMap<String, linter::Entry>> // probably inefficient and dumb
+    name: String,
+    password: String,
+    data: HashMap<String, linter::Entry> // probably inefficient and dumb
 }
 
 fn main() {
@@ -28,35 +28,15 @@ fn main() {
         println!("give a command! 'help' for list of commands");
         loop {
             let mut temp = String::new();
-            parse_command_gen(&sess, read_next(&mut temp)); // currentsession is mutable because of the login
+            parse_command_gen(&sess, read_next(&mut temp));
         }
-        /*
-        let mut t = String::new();
-        let token = read_next(&mut t)[0];
-        let data: HashMap<String, linter::Entry>; // probably inefficient and dumb
-        if exists(&sess, &token) {
-            println!("welcome {}!", &token);
-            data = get_data_for(&sess, token);
-
-            // terminal
-            loop {
-                let mut s = String::new();
-                parse_command(read_next(&mut s), &data);
-            }
-        } else {
-            println!("user does not exist.");
-        }*/
     } else {
         println!("unable to connect. terminating...")
     }
 
 }
 
-fn read_next(buf: &mut String) -> Vec<&str> {
-    stdin().read_line(buf).unwrap();
-    buf.trim().split(" ").collect()
-}
-
+// for parsing general menu commands
 fn parse_command_gen(session: &Session, command: Vec<&str>) {
     match command[0] {
         "help" => help(),
@@ -68,6 +48,13 @@ fn parse_command_gen(session: &Session, command: Vec<&str>) {
     }
 }
 
+// reads from std::io into string
+fn read_next(buf: &mut String) -> Vec<&str> {
+    stdin().read_line(buf).unwrap();
+    buf.trim().split(" ").collect()
+}
+
+// help menu
 fn help() {
     print!("\nVALID COMMANDS:
     'login'
@@ -76,16 +63,17 @@ fn help() {
     'exit'\n");
 }
 
+// logs a user in if they exist, allows for user creation if not
 fn login(session: &Session, user: &str) {
     if exists(session, user) { // no security thus far for login, add please
         println!("welcome {}!", &user);
         start_user(&session, user)
     } else {
-        println!("user does not exist. would you like to create that user?");
+        println!("user does not exist. would you like to create that user?"); // unimplemented
     }
 }
 
-// could very well be replaced by get_data_for having a little more logic
+// returns whether or not a user exists
 fn exists(session: &Session, user: &str) -> bool {
     let mut channel = session.channel_session().unwrap();
     channel.exec("cat directory/users.txt").unwrap();
@@ -97,25 +85,35 @@ fn exists(session: &Session, user: &str) -> bool {
 
 fn start_user(session: &Session, user: &str) {
     let data = get_data_for(session, user);
+    let new_user = User::new(session, user);
+    loop {
+        let mut temp = String::new();
+        new_user.parse_command_user(&session, read_next(&mut temp));
+    }
 }
 
-// return data for valid user, or fails
-fn get_data_for(sess: &Session, user: &str) -> HashMap<String, linter::Entry> {
+impl User {
+    fn new(session: &Session, user: &str) -> User {
+        User { name: user.to_string(), password: "none".to_string(), data: get_data_for(session, user) }
+    }
+    fn parse_command_user(&self, session: &Session, command: Vec<&str>) {
+        match command[0] {
+            "find" => find(command[1], &self.data), // try to make OO if it makes sense // also, extend funtionality to include multiple searches per command (not just limited to command[1])
+            "insert" => println!("unimplemented entry insertion. sorry! :("),
+            "remove" => println!("unimplemented entry remove. sorry! :("),
+            "exit" => std::process::exit(0),
+            _ => println!("unknown command '{}'", command.join(" "))
+        }
+    }
+}
+
+// return data for user
+fn get_data_for(sess: &Session, user: &str) -> HashMap<String, linter::Entry> { // not very open to other users - actually not at all
     let mut channel = sess.channel_session().unwrap();
     channel.exec("cat directory/pass.txt").unwrap();
     let mut s = String::new();
     channel.read_to_string(&mut s).unwrap();
     linter::map(s.to_string())
-}
-
-fn parse_command_user(command: Vec<&str>, data: &HashMap<String, linter::Entry>) {
-    match command[0] {
-        "find" => find(command[1], data), // try to make OO if it makes sense // also, extend funtionality to include multiple searches per command (not just limited to command[1])
-        "insert" => println!("unimplemented entry insertion. sorry! :("),
-        "remove" => println!("unimplemented entry remove. sorry! :("),
-        "exit" => std::process::exit(0),
-        _ => println!("unknown command '{}'", command.join(" "))
-    }
 }
 
 fn find(command: &str, hash: &HashMap<String, linter::Entry>) {
