@@ -1,3 +1,0 @@
-N: Google
-U: username
-P: password
