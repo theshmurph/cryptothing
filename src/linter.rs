@@ -17,6 +17,7 @@ pub fn map(data: String) -> HashMap<String, Entry> {
 
 // could be replaced with bufreader, and may very well be done
 fn entrify(data: String) -> Vec<Entry> {
+    /*
     enum EntryState { Id, Name, Pass, New }
 
     let mut state = EntryState::Id;
@@ -60,7 +61,9 @@ fn entrify(data: String) -> Vec<Entry> {
             }
         }
     }
-    entries
+    entries*/
+    let mut reader = BufReader::new(data);
+    vec![]
 }
 
 impl Entry {
