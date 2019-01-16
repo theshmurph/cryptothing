@@ -1,4 +1,3 @@
-use std::io::BufReader;
 use std::collections::HashMap;
 
 pub struct Entry {
@@ -16,8 +15,8 @@ pub fn map(data: String) -> HashMap<String, Entry> {
 }
 
 // could be replaced with bufreader, and may very well be done
+// EDIT: cannot be done w/ bufreader or bufread until sftp is figured out
 fn entrify(data: String) -> Vec<Entry> {
-    /*
     enum EntryState { Id, Name, Pass, New }
 
     let mut state = EntryState::Id;
@@ -61,9 +60,7 @@ fn entrify(data: String) -> Vec<Entry> {
             }
         }
     }
-    entries*/
-    let mut reader = BufReader::new(data);
-    vec![]
+    entries
 }
 
 impl Entry {

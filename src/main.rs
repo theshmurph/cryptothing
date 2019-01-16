@@ -1,4 +1,4 @@
-extern crate ssh2;
+extern crate ssh2; // could potentially use libssh2-sys in future
 
 use std::io::stdin;
 use std::io::Read;
@@ -20,11 +20,11 @@ fn main() {
         println!("enter user token: ");
 
         let mut t = String::new();
-        let token = read_next(&mut t);
+        let token = read_next(&mut t)[0];
         let data: HashMap<String, linter::Entry>; // probably inefficient and dumb
-        // put in something to auth token
-        if exists(&token) {
-            data = get_data_for(sess, token);
+        if exists(&sess, &token) {
+            println!("welcome {}!", &token);
+            data = get_data_for(&sess, token);
 
             // terminal
             loop {
@@ -45,7 +45,7 @@ fn read_next(buf: &mut String) -> Vec<&str> {
     buf.trim().split(" ").collect()
 }
 // return data for valid user, or fails
-fn get_data_for(sess: Session, token: Vec<&str>) -> HashMap<String, linter::Entry> {
+fn get_data_for(sess: &Session, token: &str) -> HashMap<String, linter::Entry> {
     let mut channel = sess.channel_session().unwrap();
     channel.exec("cat directory/pass.txt").unwrap();
     let mut s = String::new();
@@ -54,15 +54,13 @@ fn get_data_for(sess: Session, token: Vec<&str>) -> HashMap<String, linter::Entr
 }
 
 // could very well be replaced by get_data_for having a little more logic
-fn exists(token: &Vec<&str>) -> bool {
-    /*
+fn exists(sess: &Session, token: &str) -> bool {
     let mut channel = sess.channel_session().unwrap();
     channel.exec("cat directory/users.txt").unwrap();
     let mut s = String::new();
     channel.read_to_string(&mut s).unwrap();
-    let m = linter::map(s.to_string());
-    if*/
-    true
+    let a: Vec<&str> = s.trim().split('\n').collect();
+    return a.contains(&token)
 }
 
 fn parse_command(command: Vec<&str>, data: &HashMap<String, linter::Entry>) {
