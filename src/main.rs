@@ -39,7 +39,7 @@ fn main() {
 // for parsing general menu commands
 fn parse_command_gen(session: &Session, command: Vec<&str>) {
     match command[0] {
-        "help" => help(),
+        "help" => help_gen(),
         "login" => login(session, command[1]),
         "create" => println!("unimplemented user creation. sorry! :("),
         "delete" => println!("unimplemented user deletion. sorry! :("),
@@ -55,12 +55,12 @@ fn read_next(buf: &mut String) -> Vec<&str> {
 }
 
 // help menu
-fn help() {
+fn help_gen() {
     print!("\nVALID COMMANDS:
-    'login'
-    'create'
-    'delete'
-    'exit'\n");
+    'login' - log in via username
+    'create' - create new user
+    'delete' - delete a stored user
+    'exit' - exit session\n");
 }
 
 // logs a user in if they exist, allows for user creation if not
@@ -98,7 +98,7 @@ impl User {
     }
     fn parse_command_user(&self, session: &Session, command: Vec<&str>) {
         match command[0] {
-            "find" => find(command[1], &self.data), // try to make OO if it makes sense // also, extend funtionality to include multiple searches per command (not just limited to command[1])
+            "find" => find(&command[1..], &self.data), // try to make OO if it makes sense
             "insert" => println!("unimplemented entry insertion. sorry! :("),
             "remove" => println!("unimplemented entry remove. sorry! :("),
             "exit" => std::process::exit(0),
@@ -116,12 +116,14 @@ fn get_data_for(sess: &Session, user: &str) -> HashMap<String, linter::Entry> { 
     linter::map(s.to_string())
 }
 
-fn find(command: &str, hash: &HashMap<String, linter::Entry>) {
+fn find(command: &[&str], hash: &HashMap<String, linter::Entry>) {
     //println!("{}", command.len());
     //println!("{}", command);
-    match hash.get(command) {
-        Some(entry) => println!("\nid: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
-        None => println!("No entry found for that ID.")
+    for i in command {
+        match hash.get(*i) {
+            Some(entry) => println!("\nid: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
+            None => println!("No entry found for that ID.")
+        }
     }
     /* // get whenever multiple searches are supported
     match command.len() {
