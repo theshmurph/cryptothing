@@ -12,12 +12,13 @@ mod linter;
 struct User {
     name: String,
     password: String,
-    data: HashMap<String, linter::Entry> // probably inefficient and dumb
+    data: HashMap<String, linter::Entry>, // probably inefficient and dumb
+    active: bool
 }
 
 fn main() {
 
-    // block needs to be in this function - possibly for scope issues
+    // block needs to be in this function - possibly for scope reasons
     let tcp = TcpStream::connect("pi.theshmurph.com:22").unwrap();
     let mut sess = Session::new().unwrap();
     sess.handshake(&tcp).unwrap();
@@ -41,8 +42,8 @@ fn parse_command_gen(session: &Session, command: Vec<&str>) {
     match command[0] {
         "help" => help_gen(),
         "login" => login(session, command[1]),
-        "create" => println!("unimplemented user creation. sorry! :("),
-        "delete" => println!("unimplemented user deletion. sorry! :("),
+        "create" => println!("this function would work better with a database!"),
+        "delete" => println!("this function would work better with a database!"),
         "exit" => std::process::exit(0),
         _ => println!("unknown command '{}'", command.join(" "))
     }
@@ -56,10 +57,10 @@ fn read_next(buf: &mut String) -> Vec<&str> {
 
 // help menu
 fn help_gen() {
-    print!("\nVALID COMMANDS:
+    print!("\nVALID TERMINAL COMMANDS:
     'login' - log in via username
-    'create' - create new user
-    'delete' - delete a stored user
+    'create' - create new user --UNIMPLEMENTED
+    'delete' - delete a stored user --UNIMPLEMENTED
     'exit' - exit session\n");
 }
 
@@ -85,25 +86,28 @@ fn exists(session: &Session, user: &str) -> bool {
 
 fn start_user(session: &Session, user: &str) {
     let data = get_data_for(session, user);
-    let new_user = User::new(session, user);
-    loop {
+    let mut new_user = User::new(session, user);
+    while new_user.active {
         let mut temp = String::new();
-        new_user.parse_command_user(&session, read_next(&mut temp));
+        parse_command_user(&mut new_user, &session, read_next(&mut temp));
     }
 }
 
 impl User {
     fn new(session: &Session, user: &str) -> User {
-        User { name: user.to_string(), password: "none".to_string(), data: get_data_for(session, user) }
+        User { name: user.to_string(), password: "none".to_string(), data: get_data_for(session, user), active: true }
     }
-    fn parse_command_user(&self, session: &Session, command: Vec<&str>) {
-        match command[0] {
-            "find" => find(&command[1..], &self.data), // try to make OO if it makes sense
-            "insert" => println!("unimplemented entry insertion. sorry! :("),
-            "remove" => println!("unimplemented entry remove. sorry! :("),
-            "exit" => std::process::exit(0),
-            _ => println!("unknown command '{}'", command.join(" "))
-        }
+}
+
+fn parse_command_user(mut user: &mut User, session: &Session, command: Vec<&str>) {
+    let data = get_data_for(session, &(user.name));
+    match command[0] {
+        "help" => help_user(),
+        "find" => find(&command[1..], &data), // try to make OO if it makes sense
+        "insert" => println!("this function would work better with a database!"),
+        "remove" => println!("this function would work better with a database!"),
+        "leave" => logout(&mut user),
+        _ => println!("unknown command '{}'", command.join(" "))
     }
 }
 
@@ -116,23 +120,26 @@ fn get_data_for(sess: &Session, user: &str) -> HashMap<String, linter::Entry> { 
     linter::map(s.to_string())
 }
 
+fn help_user() {
+    print!("\nVALID USER COMMANDS:
+    'find' - find data for requested sites
+    'insert' - create new user --UNIMPLEMENTED
+    'remove' - delete a stored user --UNIMPLEMENTED
+    'leave' - log out\n");
+}
+
 fn find(command: &[&str], hash: &HashMap<String, linter::Entry>) {
-    //println!("{}", command.len());
-    //println!("{}", command);
     for i in command {
         match hash.get(*i) {
             Some(entry) => println!("\nid: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
             None => println!("No entry found for that ID.")
         }
     }
-    /* // get whenever multiple searches are supported
-    match command.len() {
-        1 => {
-            match hash.get(command) {
-                Some(entry) => println!("id: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
-                None => println!("No entry found for that ID.")
-            }
-        }
-        _ => println!("unexpected command after 'find'. try again.")
-    }*/
+}
+
+fn logout(user: &mut User) {
+    // very basic, should be beefed up in future
+    user.active = false;
+    println!("logging out {}...", user.name);
+    // doesn't clear user data, just sets active to false
 }
