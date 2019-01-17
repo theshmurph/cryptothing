@@ -3,6 +3,7 @@
 
 ## goals
 
+- visual representation about directory location
 - encrypted database, program decrypts on client-side
 - actual database - not simply text files (sql possibly)
 - decryption based on a given and valid key
