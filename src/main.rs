@@ -12,7 +12,7 @@ mod linter;
 struct User {
     name: String,
     password: String,
-    data: HashMap<String, linter::Entry>, // probably inefficient and dumb
+    data: HashMap<String, linter::Entry>,
     active: bool
 }
 
@@ -80,8 +80,21 @@ fn exists(session: &Session, user: &str) -> bool {
     channel.exec("cat directory/users.txt").unwrap();
     let mut s = String::new();
     channel.read_to_string(&mut s).unwrap();
-    let a: Vec<&str> = s.trim().split('\n').collect();
-    return a.contains(&user)
+    let user_pass: Vec<&str> = s.trim().split('\n').collect();
+
+    for i in user_pass {
+        let a: Vec<&str> = i.split(" ").collect();
+        if a[0] == user {
+            println!("enter user password: ");
+            let mut s = String::new();
+            if read_next(&mut s)[0] == a[1] {
+                return true
+            }
+        }
+    }
+    println!("incorrect password!");
+
+    return false
 }
 
 fn start_user(session: &Session, user: &str) {
@@ -112,9 +125,9 @@ fn parse_command_user(mut user: &mut User, session: &Session, command: Vec<&str>
 }
 
 // return data for user
-fn get_data_for(sess: &Session, user: &str) -> HashMap<String, linter::Entry> { // not very open to other users - actually not at all
+fn get_data_for(sess: &Session, user: &str) -> HashMap<String, linter::Entry> {
     let mut channel = sess.channel_session().unwrap();
-    channel.exec("cat directory/pass.txt").unwrap();
+    channel.exec(format!("cat directory/{}/pass.txt", user).as_ref()).unwrap();
     let mut s = String::new();
     channel.read_to_string(&mut s).unwrap();
     linter::map(s.to_string())

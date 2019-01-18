@@ -8,8 +8,9 @@ pub struct Entry {
 
 pub fn map(data: String) -> HashMap<String, Entry> {
     let mut hash: HashMap<String, Entry> = HashMap::new();
-    for i in entrify(data) {
-        hash.insert(i.id.to_string(), i); // works because i is no longer being used twice
+    let entries = entrify(data);
+    for i in entries {
+        hash.insert(i.id.to_string(), i); // works because i is no longer being used twice - 'to_string()' makes a new string and not the string from i
     }
     hash
 }
@@ -20,43 +21,28 @@ fn entrify(data: String) -> Vec<Entry> {
     enum EntryState { Id, Name, Pass, New }
 
     let mut state = EntryState::Id;
-    let mut entries = Vec::new();
-
-    let mut temp_str = String::from("");
     let mut temp_ent = Entry::new();
 
-    for i in data.chars() {
+    let mut entries = Vec::new();
+
+    for i in data.lines() {
         match state {
             EntryState::Id => {
-                if i != '\n' {
-                    temp_str.push(i);
-                } else {
-                    temp_ent.id = (&temp_str).to_string();
-                    temp_str.clear();
-                    state = EntryState::Name;
-                }
-            } EntryState::Name => {
-                if i != '\n' {
-                    temp_str.push(i);
-                } else {
-                    temp_ent.name = (&temp_str).to_string();
-                    temp_str.clear();
-                    state = EntryState::Pass;
-                }
-            } EntryState::Pass => {
-                if i != '\n' {
-                    temp_str.push(i);
-                } else {
-                    temp_ent.pass = (&temp_str).to_string();
-                    temp_str.clear();
-                    state = EntryState::New;
-                }
-            } EntryState::New => {
-                if i == '\n' { // not very loose on syntax, but will work for now
-                    entries.push(temp_ent);
-                    temp_ent = Entry::new();
-                    state = EntryState::Id;
-                }
+                temp_ent.id = i.to_string();
+                state = EntryState::Name;
+            }
+            EntryState::Name => {
+                temp_ent.name = i.to_string();
+                state = EntryState::Pass;
+            }
+            EntryState::Pass => {
+                temp_ent.pass = i.to_string();
+                state = EntryState::New;
+            }
+            EntryState::New => {
+                entries.push(temp_ent);
+                temp_ent = Entry::new();
+                state = EntryState::Id;
             }
         }
     }
