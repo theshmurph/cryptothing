@@ -97,8 +97,8 @@ fn exists(session: &Session, user: &str) -> bool {
     return false
 }
 
+// starts new user session
 fn start_user(session: &Session, user: &str) {
-    let data = get_data_for(session, user);
     let mut new_user = User::new(session, user);
     while new_user.active {
         let mut temp = String::new();
@@ -106,12 +106,14 @@ fn start_user(session: &Session, user: &str) {
     }
 }
 
+// implementation for user struct
 impl User {
     fn new(session: &Session, user: &str) -> User {
         User { name: user.to_string(), password: "none".to_string(), data: get_data_for(session, user), active: true }
     }
 }
 
+// parses command on user menu
 fn parse_command_user(mut user: &mut User, session: &Session, command: Vec<&str>) {
     let data = get_data_for(session, &(user.name));
     match command[0] {
@@ -133,6 +135,7 @@ fn get_data_for(sess: &Session, user: &str) -> HashMap<String, linter::Entry> {
     linter::map(s.to_string())
 }
 
+// help menu for user commands
 fn help_user() {
     print!("\nVALID USER COMMANDS:
     'find' - find data for requested sites
@@ -141,6 +144,7 @@ fn help_user() {
     'leave' - log out\n");
 }
 
+// finds entry in pass.txt file
 fn find(command: &[&str], hash: &HashMap<String, linter::Entry>) {
     for i in command {
         match hash.get(*i) {
@@ -150,6 +154,7 @@ fn find(command: &[&str], hash: &HashMap<String, linter::Entry>) {
     }
 }
 
+// logs specified user out
 fn logout(user: &mut User) {
     // very basic, should be beefed up in future
     user.active = false;
