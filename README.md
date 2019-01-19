@@ -1,6 +1,10 @@
 
 # password manager (cryptothing)
 
+## for other users
+
+- login with the username 'test' and password '1234'
+
 ## goals
 
 - visual representation about directory location
