@@ -19,7 +19,7 @@ struct User {
 fn main() {
 
     // block needs to be in this function - possibly for scope reasons
-    let tcp = TcpStream::connect("pi.theshmurph.com:22").unwrap();
+    let tcp = TcpStream::connect("theshmurph.com:22").unwrap();
     let mut sess = Session::new().unwrap();
     sess.handshake(&tcp).unwrap();
     sess.userauth_password("main", "BRMurphy35").unwrap(); // is possibly bad practice
@@ -66,7 +66,7 @@ fn help_gen() {
 
 // logs a user in if they exist, allows for user creation if not
 fn login(session: &Session, user: &str) {
-    if exists(session, user) { // no security thus far for login, add please
+    if exists(session, user) {
         println!("welcome {}!", &user);
         start_user(&session, user)
     } else {

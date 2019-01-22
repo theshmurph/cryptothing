@@ -7,10 +7,10 @@ pub struct Entry {
 }
 
 pub fn map(data: String) -> HashMap<String, Entry> {
+    // old way
     let mut hash: HashMap<String, Entry> = HashMap::new();
-    let entries = entrify(data);
-    for i in entries {
-        hash.insert(i.id.to_string(), i); // works because i is no longer being used twice - 'to_string()' makes a new string and not the string from i
+    for i in entrify(data) {
+        hash.insert(i.id.to_string(), i);
     }
     hash
 }
