@@ -5,3 +5,7 @@ authors = ["Bryce Murphy <brshmurphy@gmail.com>"]
 
 [dependencies]
 ssh2 = "0.3.3"
+
+[dependencies.rusqlite]
+version = "0.16.0"
+features = ["bundled"]

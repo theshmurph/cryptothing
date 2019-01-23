@@ -1,10 +1,18 @@
 extern crate ssh2; // could potentially use libssh2-sys in future
+extern crate rusqlite;
 
 use std::io::stdin;
 use std::io::Read;
-use ssh2::Session;
+
 use std::net::TcpStream;
 use std::collections::HashMap;
+
+use ssh2::Session;
+
+use rusqlite::types::ToSql;
+use rusqlite::{Connection, NO_PARAMS};
+
+
 
 mod linter;
 
