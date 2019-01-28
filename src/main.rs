@@ -1,5 +1,5 @@
 extern crate ssh2; // could potentially use libssh2-sys in future
-extern crate rusqlite;
+extern crate rpassword;
 
 use std::io::stdin;
 use std::io::Read;
@@ -9,11 +9,6 @@ use std::net::TcpStream;
 use std::collections::HashMap;
 
 use ssh2::Session;
-
-use rusqlite::types::ToSql;
-use rusqlite::{Connection, NO_PARAMS};
-
-
 
 mod linter;
 
@@ -31,9 +26,8 @@ fn main() {
     let tcp = TcpStream::connect("theshmurph.com:22").unwrap();
     let mut sess = Session::new().unwrap();
     sess.handshake(&tcp).unwrap();
-    println!("enter ssh password: ");
-    let mut s = String::new();
-    sess.userauth_password("main", &read_next(&mut s).join("")).unwrap(); // kind of gross
+    let pass = rpassword::prompt_password_stdout("enter ssh password: ").unwrap(); // seems a bit slow
+    sess.userauth_password("main", &pass).unwrap();
 
     if sess.authenticated() {
         println!("session connected!");
@@ -96,9 +90,8 @@ fn exists(session: &Session, user: &str) -> bool {
     for i in user_pass {
         let a: Vec<&str> = i.split(" ").collect();
         if a[0] == user {
-            println!("enter user password: ");
-            let mut s = String::new();
-            if read_next(&mut s)[0] == a[1] {
+            let pass = rpassword::prompt_password_stdout("enter user password: ").unwrap(); // seems a bit slow
+            if pass == a[1] {
                 return true
             }
         }
