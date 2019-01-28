@@ -10,25 +10,30 @@ use std::collections::HashMap;
 
 use ssh2::Session;
 
-mod linter;
+mod helper;
 
 // represents a connected user
 struct User {
     name: String,
     password: String,
-    data: HashMap<String, linter::Entry>,
+    data: HashMap<String, helper::Entry>,
     active: bool
 }
 
 fn main() {
 
     // block needs to be in this function - possibly for scope reasons
-    let tcp = TcpStream::connect("theshmurph.com:22").unwrap();
-    let mut sess = Session::new().unwrap();
-    sess.handshake(&tcp).unwrap();
-    let pass = rpassword::prompt_password_stdout("enter ssh password: ").unwrap(); // seems a bit slow
-    sess.userauth_password("main", &pass).unwrap();
+    let tcp = TcpStream::connect("theshmurph.com:22")
+            .expect("could not connect to the server. disconnecting...");
 
+    let mut sess = Session::new().unwrap();
+    sess.handshake(&tcp).expect("couldn't link tcp stream and session. disconnecting...");
+    
+    let pass = rpassword::prompt_password_stdout("enter ssh password: ").unwrap();
+
+    sess.userauth_password("main", &pass)
+            .unwrap_or(println!("\npassword invalid. disconnecting..."));
+    
     if sess.authenticated() {
         println!("session connected!");
         println!("give a command! 'help' for list of commands");
@@ -36,8 +41,6 @@ fn main() {
             let mut temp = String::new();
             parse_command_gen(&sess, read_next(&mut temp));
         }
-    } else {
-        println!("unable to connect. terminating...")
     }
 
 }
@@ -131,12 +134,12 @@ fn parse_command_user(mut user: &mut User, session: &Session, command: Vec<&str>
 }
 
 // return data for user
-fn get_data_for(sess: &Session, user: &str) -> HashMap<String, linter::Entry> {
+fn get_data_for(sess: &Session, user: &str) -> HashMap<String, helper::Entry> {
     let mut channel = sess.channel_session().unwrap();
     channel.exec(format!("cat directory/{}/pass.txt", user).as_ref()).unwrap();
     let mut s = String::new();
     channel.read_to_string(&mut s).unwrap();
-    linter::map(s.to_string())
+    helper::map(s.to_string())
 }
 
 // help menu for user commands
@@ -149,7 +152,7 @@ fn help_user() {
 }
 
 // finds entry in pass.txt file
-fn find(command: &[&str], hash: &HashMap<String, linter::Entry>) {
+fn find(command: &[&str], hash: &HashMap<String, helper::Entry>) {
     for i in command {
         match hash.get(*i) {
             Some(entry) => println!("\nid: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
