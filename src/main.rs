@@ -3,6 +3,7 @@ extern crate rusqlite;
 
 use std::io::stdin;
 use std::io::Read;
+use std::str;
 
 use std::net::TcpStream;
 use std::collections::HashMap;
@@ -30,7 +31,9 @@ fn main() {
     let tcp = TcpStream::connect("theshmurph.com:22").unwrap();
     let mut sess = Session::new().unwrap();
     sess.handshake(&tcp).unwrap();
-    sess.userauth_password("main", "BRMurphy35").unwrap(); // is possibly bad practice
+    println!("enter ssh password: ");
+    let mut s = String::new();
+    sess.userauth_password("main", &read_next(&mut s).join("")).unwrap(); // kind of gross
 
     if sess.authenticated() {
         println!("session connected!");
