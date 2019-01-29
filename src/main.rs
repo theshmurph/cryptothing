@@ -1,6 +1,7 @@
 extern crate ssh2; // could potentially use libssh2-sys in future
 extern crate rpassword;
 
+use std::io::Result;
 use std::io::stdin;
 use std::io::Read;
 use std::str;
@@ -35,32 +36,44 @@ fn main() {
             .unwrap_or(println!("\npassword invalid. disconnecting..."));
     
     if sess.authenticated() {
-        println!("session connected!");
-        println!("give a command! 'help' for list of commands");
-        loop {
-            let mut temp = String::new();
-            parse_command_gen(&sess, read_next(&mut temp));
-        }
+        shell(sess);
     }
 
 }
 
+fn shell(sess: Session) {
+    println!("session connected!");
+    println!("give a command! 'help' for list of commands");
+    loop {
+        let mut temp = String::new();
+        parse_command_gen(&sess, read_next(&mut temp));
+    }
+}
+
 // for parsing general menu commands
-fn parse_command_gen(session: &Session, command: Vec<&str>) {
-    match command[0] {
-        "help" => help_gen(),
-        "login" => login(session, command[1]),
-        "create" => println!("this function would work better with a database!"),
-        "delete" => println!("this function would work better with a database!"),
-        "exit" => std::process::exit(0),
-        _ => println!("unknown command '{}'", command.join(" "))
+fn parse_command_gen(session: &Session, command: Option<Vec<&str>>) {
+    match command {
+        Some(command) => {
+            match command[0] {
+            "help" => help_gen(),
+            "login" => login(session, command),
+            "create" => println!("this function would work better with a database!"),
+            "delete" => println!("this function would work better with a database!"),
+            "exit" => std::process::exit(0),
+            _ => println!("unknown command '{}'", command.join(" "))
+            }
+        }
+        None => println!("unable to process command. enter 'help' for valid commands.")
     }
 }
 
 // reads from std::io into string
-fn read_next(buf: &mut String) -> Vec<&str> {
+fn read_next(buf: &mut String) -> Option<Vec<&str>> {
     stdin().read_line(buf).unwrap();
-    buf.trim().split(" ").collect()
+    match buf.trim() {
+        "" => None,
+        _ => Some(buf.trim().split(" ").collect())
+    }
 }
 
 // help menu
@@ -73,9 +86,29 @@ fn help_gen() {
 }
 
 // logs a user in if they exist, allows for user creation if not
-fn login(session: &Session, user: &str) {
+fn login(session: &Session, command: Vec<&str>) {
+    match command.len() {
+        1 => login_menu(session),
+        2 => login_user(session, command[1]),
+        _ => println!("unknown command '{}'", command.join(" "))
+    }
+}
+
+fn login_menu(session: &Session) {
+    println!("who would you like to log in as? ('enter' to exit)");
+    let mut s = String::new();
+    if let Some(s) = read_next(&mut s) {
+        if s.len() == 1 {
+            login_user(session, &s[0])
+        } else {
+            println!("invalid command");
+        }
+    }
+}
+
+fn login_user(session: &Session, user: &str) {
     if exists(session, user) {
-        println!("welcome {}!", &user);
+        println!("\nwelcome {}!", &user);
         start_user(&session, user)
     } else {
         println!("user does not exist. would you like to create that user?"); // unimplemented
@@ -99,9 +132,8 @@ fn exists(session: &Session, user: &str) -> bool {
             }
         }
     }
-    println!("incorrect password!");
 
-    return false
+    false
 }
 
 // starts new user session
@@ -121,15 +153,20 @@ impl User {
 }
 
 // parses command on user menu
-fn parse_command_user(mut user: &mut User, session: &Session, command: Vec<&str>) {
+fn parse_command_user(mut user: &mut User, session: &Session, command: Option<Vec<&str>>) {
     let data = get_data_for(session, &(user.name));
-    match command[0] {
-        "help" => help_user(),
-        "find" => find(&command[1..], &data), // try to make OO if it makes sense
-        "insert" => println!("this function would work better with a database!"),
-        "remove" => println!("this function would work better with a database!"),
-        "leave" => logout(&mut user),
-        _ => println!("unknown command '{}'", command.join(" "))
+    match command {
+        Some(command) => {
+            match command[0] {
+            "help" => help_user(),
+            "find" => find(&command[1..], &data), // try to make OO if it makes sense
+            "insert" => println!("this function would work better with a database!"),
+            "remove" => println!("this function would work better with a database!"),
+            "leave" => logout(&mut user),
+            _ => println!("unknown command '{}'", command.join(" "))
+            }
+        }
+        None => println!("unable to process command. enter 'help' for valid commands.")
     }
 }
 
