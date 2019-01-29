@@ -24,6 +24,7 @@ struct User {
 fn main() {
 
     // block needs to be in this function - possibly for scope reasons
+
     let tcp = TcpStream::connect("theshmurph.com:22")
             .expect("could not connect to the server. disconnecting...");
 
@@ -32,22 +33,25 @@ fn main() {
     
     let pass = rpassword::prompt_password_stdout("enter ssh password: ").unwrap();
 
-    sess.userauth_password("main", &pass)
-            .unwrap_or(println!("\npassword invalid. disconnecting..."));
+    sess.userauth_password("ct", &pass)
+            .expect("\npassword invalid. disconnecting...");
     
-    if sess.authenticated() {
-        shell(sess);
-    }
+    shell(sess);
 
 }
-
+// runs the program
 fn shell(sess: Session) {
-    println!("session connected!");
+    println!("\nsession connected!");
     println!("give a command! 'help' for list of commands");
-    loop {
+    while sess.authenticated() {
+        let mut channel = sess.channel_session().unwrap();
+        let mut s = String::new();
+        channel.read_to_string(&mut s).unwrap();
+        println!("response: {}", s);
         let mut temp = String::new();
         parse_command_gen(&sess, read_next(&mut temp));
     }
+    println!("disconnect!");
 }
 
 // for parsing general menu commands
