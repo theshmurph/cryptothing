@@ -33,24 +33,38 @@ fn main() {
     
     let pass = rpassword::prompt_password_stdout("enter ssh password: ").unwrap();
 
+    match sess.userauth_password("ct", &pass) {
+        Ok(()) => println!("passed uauth"),
+        Err(e) => println!("\npassword invalid. disconnecting...")
+    }
+    /*
     sess.userauth_password("ct", &pass)
-            .expect("\npassword invalid. disconnecting...");
-    
-    shell(sess);
+            .expect("\npassword invalid. disconnecting...");*/
+
+
+/*
+    let mut channel = sess.channel_session().unwrap();
+    let mut s = String::new();
+    channel.read_to_string(&mut s).unwrap();
+    println!("response: {}", s);
+    channel.wait_close();*/
+
+/*
+    while sess.authenticated() {
+        shell(&sess);
+    }*/
+
+    println!("disconnect!");
 
 }
 // runs the program
-fn shell(sess: Session) {
+fn shell(sess: &Session) {
     println!("\nsession connected!");
     println!("give a command! 'help' for list of commands");
-    while sess.authenticated() {
-        let mut channel = sess.channel_session().unwrap();
-        let mut s = String::new();
-        channel.read_to_string(&mut s).unwrap();
-        println!("response: {}", s);
-        let mut temp = String::new();
-        parse_command_gen(&sess, read_next(&mut temp));
-    }
+    //while sess.authenticated() {
+    let mut temp = String::new();
+    parse_command_gen(&sess, read_next(&mut temp));
+    //}
     println!("disconnect!");
 }
 
