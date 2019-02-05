@@ -6,3 +6,4 @@ authors = ["Bryce Murphy <brshmurphy@gmail.com>"]
 [dependencies]
 ssh2 = "0.3.3"
 rpassword = "2.1.0"
+hyper = "0.12"
