@@ -2,7 +2,6 @@ extern crate ssh2; // could potentially use libssh2-sys in future
 extern crate rpassword;
 extern crate hyper;
 
-use std::io::Result;
 use std::io::stdin;
 use std::io::Read;
 use std::str;
@@ -11,9 +10,6 @@ use std::net::TcpStream;
 use std::collections::HashMap;
 
 use ssh2::Session;
-
-use hyper::Client;
-use hyper::rt::{self, Future, Stream};
 
 mod helper;
 
@@ -29,16 +25,6 @@ fn main() {
 
     // block needs to be in this function - possibly for scope reasons
 
-    rt::run(rt::lazy(|| {
-        let client = Client::new();
-
-        let uri = "http://theshmurph.com:3599".parse().unwrap();
-
-        client.get(uri).map(|res| println!("Response: {:?}", res))
-            .map_err(|err| println!("Error: {}", err))
-    }));
-
-/*
     let tcp = TcpStream::connect("theshmurph.com:22")
             .expect("could not connect to the server. disconnecting...");
 
@@ -50,26 +36,18 @@ fn main() {
     match sess.userauth_password("ct", &pass) {
         Ok(()) => println!("passed uauth"),
         Err(e) => println!("\npassword invalid. disconnecting...")
-    }*/
+    }
 
-    /*
     sess.userauth_password("ct", &pass)
-            .expect("\npassword invalid. disconnecting...");*/
+            .expect("\npassword invalid. disconnecting...");
 
 
-/*
-    let mut channel = sess.channel_session().unwrap();
-    let mut s = String::new();
-    channel.read_to_string(&mut s).unwrap();
-    println!("response: {}", s);
-    channel.wait_close();*/
-
-/*
     while sess.authenticated() {
         shell(&sess);
-    }*/
+    }
     
 }
+
 // runs the program
 fn shell(sess: &Session) {
     println!("\nsession connected!");
