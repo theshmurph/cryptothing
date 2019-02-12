@@ -1,6 +1,5 @@
 extern crate ssh2; // could potentially use libssh2-sys in future
 extern crate rpassword;
-extern crate hyper;
 
 use std::io::stdin;
 use std::io::Read;
@@ -33,17 +32,9 @@ fn main() {
     
     let pass = rpassword::prompt_password_stdout("enter ssh password: ").unwrap();
 
-    match sess.userauth_password("ct", &pass) {
-        Ok(()) => println!("passed uauth"),
+    match sess.userauth_password("main", &pass) {
+        Ok(()) => shell(&sess),
         Err(e) => println!("\npassword invalid. disconnecting...")
-    }
-
-    sess.userauth_password("ct", &pass)
-            .expect("\npassword invalid. disconnecting...");
-
-
-    while sess.authenticated() {
-        shell(&sess);
     }
     
 }
@@ -52,11 +43,11 @@ fn main() {
 fn shell(sess: &Session) {
     println!("\nsession connected!");
     println!("give a command! 'help' for list of commands");
-    //while sess.authenticated() {
-    let mut temp = String::new();
-    parse_command_gen(&sess, read_next(&mut temp));
-    //}
-    println!("disconnect!");
+
+    while sess.authenticated() {
+        let mut temp = String::new();
+        parse_command_gen(&sess, read_next(&mut temp));
+    }
 }
 
 // for parsing general menu commands
