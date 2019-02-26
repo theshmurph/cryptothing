@@ -194,7 +194,6 @@ fn help_user() {
 // finds entry in pass.txt file
 fn find(command: &[&str], hash: &HashMap<String, helper::Entry>) {
     for i in command {
-        println!("{}", ec(&i));
         match hash.get(*i) {
             Some(entry) => println!("\nid: {}\n name: {}\n pass: {}\n", entry.id, entry.name, entry.pass),
             None => println!("No entry found for that ID.")
