@@ -5,15 +5,9 @@
 
 - login with the username 'test' and password '1234'
 
-## goals
+## short-term goals
 
-- server-side script to allow communication with db
+- implementation with server
+- integration with sequoia pgp
 - visual representation about directory location
-- encrypted database, program decrypts on client-side
-- actual database - not simply text files (sql possibly)
-- decryption based on a given and valid key
 - add/remove info
-- personal encryption type
-- ui integration
-- mobile integration
-- inference (knows if something relates to website, etc)

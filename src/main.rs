@@ -1,5 +1,6 @@
 extern crate ssh2; // could potentially use libssh2-sys in future
 extern crate rpassword;
+extern crate ring; // sha256 for now
 
 use std::io::stdin;
 use std::io::Read;
@@ -9,6 +10,8 @@ use std::net::TcpStream;
 use std::collections::HashMap;
 
 use ssh2::Session;
+
+use ring::digest::{digest, SHA256};
 
 mod helper;
 
@@ -125,8 +128,8 @@ fn exists(session: &Session, user: &str) -> bool {
 
     for i in user_pass {
         let a: Vec<&str> = i.split(" ").collect();
-        if a[0] == user {
-            let pass = rpassword::prompt_password_stdout("enter user password: ").unwrap(); // seems a bit slow
+        if a[0] == ec(user) {
+            let pass = ec(&rpassword::prompt_password_stdout("enter user password: ").unwrap()); // seems a bit slow, also messy
             if pass == a[1] {
                 return true
             }
@@ -204,4 +207,9 @@ fn logout(user: &mut User) {
     user.active = false;
     println!("logging out {}...", user.name);
     // doesn't clear user data, just sets active to false
+}
+
+fn ec(str: &str) -> String {
+    let result = digest(&SHA256, str.as_bytes());
+    result.as_ref().iter().map(|b| format!("{:x}", b)).collect()
 }
