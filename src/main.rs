@@ -6,12 +6,12 @@ use std::io::stdin;
 use std::io::Read;
 use std::str;
 
+use std::error::Error;
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::BufReader;
 use std::net::TcpStream;
 use std::collections::HashMap;
-
-use ssh2::Session;
-
-use ring::digest::{digest, SHA256};
 
 mod helper;
 
@@ -23,25 +23,76 @@ struct User {
     active: bool
 }
 
-fn main() {
-
-    // block needs to be in this function - possibly for scope reasons
-
-    let tcp = TcpStream::connect("theshmurph.com:22")
-            .expect("could not connect to the server. disconnecting...");
-
-    let mut sess = Session::new().unwrap();
-    sess.handshake(&tcp).expect("couldn't link tcp stream and session. disconnecting...");
-    
-    let pass = rpassword::prompt_password_stdout("enter ssh password: ").unwrap();
-
-    match sess.userauth_password("main", &pass) {
-        Ok(()) => shell(&sess),
-        Err(e) => println!("\npassword invalid. disconnecting...")
-    }
-    
+struct Entry {
+    site: String,
+    name: String,
+    pass: String
 }
 
+fn main() {
+
+    let mut file = File::open("./pass.cpt").unwrap();
+    let mut buf = BufReader::new(file);
+    let mut contents = String::new();
+    buf.read_to_string(&mut contents).unwrap();
+    println!("{}", contents);
+
+    let entries = entrify(contents);
+    
+    for i in entries.iter() {
+        println!("{}", i.site);
+        println!("{}", i.name);
+        println!("{}", i.pass);
+    }
+}
+
+fn entrify(contents: String) -> Vec<Entry> {
+
+    enum EntryState { Site, Name, Pass, New }
+
+    let mut state = EntryState::Site;
+    let mut entry = Entry::new();
+    let mut entries = Vec::new();
+
+    for i in contents.lines() {
+    
+        match state {
+            EntryState::Site => {
+                entry.site = i.to_string();
+                state = EntryState::Name;
+            }
+            EntryState::Name => {
+                entry.name = i.to_string();
+                state = EntryState::Pass;
+            }
+            EntryState::Pass => {
+                entry.pass = i.to_string();
+                state = EntryState::New;
+            }
+            EntryState::New => {
+                entries.push(entry);
+                entry = Entry::new();
+                state = EntryState::Site;
+            }
+        }
+    
+    }
+
+    entries
+
+}
+
+impl Entry {
+    fn new() -> Entry {
+        Entry {
+            site: String::from(""),
+            name: String::from(""),
+            pass: String::from("")
+        }
+    }
+}
+
+/*
 // runs the program
 fn shell(sess: &Session) {
     println!("\nsession connected!");
@@ -213,3 +264,5 @@ fn ec(str: &str) -> String {
     let result = digest(&SHA256, str.as_bytes());
     result.as_ref().iter().map(|b| format!("{:x}", b)).collect()
 }
+*/
+
